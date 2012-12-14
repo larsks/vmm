@@ -11,14 +11,18 @@ from api import API
 
 log = None
 
-def libvirt_err_callback(ctx, err):
-    pass
-
-def cmd_down(opts, project, api):
+def selected_instances(opts, project):
     for i in project.instances():
         if opts.names and not i['name'] in opts.names:
             continue
 
+        yield i
+
+def libvirt_err_callback(ctx, err):
+    pass
+
+def cmd_down(opts, project, api):
+    for i in selected_instances(opts, project):
         log.warn('stopping %s', i['name'])
         try:
             api.stop(i, keep=opts.keep)
@@ -26,33 +30,27 @@ def cmd_down(opts, project, api):
             continue
 
 def cmd_up(opts, project, api):
-    for i in project.instances():
-        if opts.names and not i['name'] in opts.names:
-            continue
-
+    for i in selected_instances(opts, project):
         log.warn('starting %s', i['name'])
         api.start(i)
 
 def cmd_dumpxml(opts, project, api):
-    for i in project.instances():
-        if opts.names and not i['name'] in opts.names:
-            continue
-
+    for i in selected_instances(opts, project):
         log.warn('starting %s', i['name'])
         print i.toxml()
 
 def cmd_status(opts, project, api):
-    for i in project.instances():
-        if opts.names and not i['name'] in opts.names:
-            continue
-
-        print i['name'], api.status(i)
+    for i in selected_instances(opts, project):
+        active, state, state_num = api.status(i['name'])
+        print i['name'], active, state
 
 def cmd_suspend(opts, project, api):
-    pass
+    for i in selected_instances(opts, project):
+        api.suspend_domain(i['name'])
 
 def cmd_resume(opts, project, api):
-    pass
+    for i in selected_instances(opts, project):
+        api.resume_domain(i['name'])
 
 def cmd_migrate(opts, project, api):
     pass
