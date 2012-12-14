@@ -48,7 +48,7 @@ def cmd_dumpxml(opts, project, api):
 def cmd_status(opts, project, api):
     for i in selected_instances(opts, project):
         active, state, state_num = api.status(i['name'])
-        print i['name'], active, state
+        print i['name'], active, state if state else '-'
 
 def cmd_suspend(opts, project, api):
     for i in selected_instances(opts, project):
