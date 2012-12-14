@@ -4,11 +4,15 @@ import os
 import sys
 import logging
 import argparse
+import libvirt
 
 from project import Project
 from api import API
 
 log = None
+
+def libvirt_err_callback(ctx, err):
+    pass
 
 def cmd_down(opts, project, api):
     for i in project.instances():
@@ -124,6 +128,7 @@ def main():
             )
 
     log = logging.getLogger('vmm')
+    libvirt.registerErrorHandler(libvirt_err_callback, None)
 
     opts.handler(opts, project, api)
 
