@@ -2,11 +2,9 @@
 
 import os
 import sys
-from lxml import etree
-import jinja2
-import jinja2.loaders
 
 import utils
+from templates import env
 
 bus2dev = {
         'virtio': 'vda',
@@ -28,9 +26,6 @@ class Disk (dict):
         for k,v in defaults.items():
             self.setdefault(k, v)
 
-        self.env = jinja2.Environment(
-                loader=jinja2.loaders.PackageLoader('vmm'))
-
     @property
     def size(self):
         disk_size, disk_unit = utils.parse_size(self['size'])
@@ -41,6 +36,6 @@ class Disk (dict):
         return bus2dev[self['bus']]
 
     def toxml(self):
-        tmpl = self.env.get_template('disk.xml')
+        tmpl = env.get_template('disk.xml')
         return tmpl.render(disk=self)
 

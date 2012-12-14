@@ -4,14 +4,12 @@ import os
 import sys
 import logging
 import errno
-import pprint
-
 import libvirt
-from lxml.builder import ElementMaker
 from lxml import etree
 from lxml import objectify
 
 import utils
+from templates import env
 
 domain_states = {
         libvirt.VIR_DOMAIN_NOSTATE: 'none',
@@ -30,12 +28,9 @@ class API (object):
             uri = os.environ.get('LIBVIRT_DEFAULT_URI', 'qemu:///session')
 
         self.uri = uri
-        self.setup_logging()
-        self.setup_elementmaker()
-        self.open_connection()
 
-    def setup_elementmaker(self):
-        self.elementmaker = ElementMaker()
+        self.setup_logging()
+        self.open_connection()
 
     def setup_logging(self):
         self.log = logging.getLogger('vmm.api')
@@ -100,44 +95,23 @@ class API (object):
 
         return vol
 
-    def attach_backing_store(self, disk, xml):
-        E = self.elementmaker
-
-        bs = disk['backing_store']
-
-        if bs['type'] == 'volume':
-            bvol = self.find_volume(bs['name'], bs['pool'])
-            back = E.backingStore(
-                    E.path(bvol.path()),
-                    E.format(type=bs['format']),
-                    )
-        elif bs['type'] == 'file':
-            back = E.backingStore(
-                    E.path(bs['source']),
-                    E.format(type=bs['format']),
-                    )
-
-        xml.append(back)
+    def resolve_volume(self, disk):
+        if disk['type'] == 'volume':
+            vol = self.find_volume(disk['name'], disk['pool'])
+            disk['path'] = vol.path()
+            disk['type'] = 'file'
 
     def create_volume(self, disk):
-        E = self.elementmaker
-
         size, unit = utils.parse_size(disk['size'])
-
-        xml = E.volume(
-                E.name(disk['name']),
-                E.capacity(size, unit=unit),
-                E.target(
-                    E.format(type=disk.get('format', 'raw'))),
-                )
-
         if 'backing_store' in disk:
-            self.attach_backing_store(disk, xml)
+            self.resolve_volume(disk['backing_store'])
 
+        xml = env.get_template('volume.xml').render(
+                vol=disk)
         pool = self.find_pool(disk['pool'])
         self.log.debug('creating vol %s in pool %s',
                 disk['name'], pool.name())
-        vol = pool.createXML(etree.tostring(xml), 0)
+        vol = pool.createXML(xml, 0)
         return vol
 
     def process_disks(self, instance):
@@ -163,6 +137,7 @@ class API (object):
                     self.log.debug('vol %s in pool %s not found',
                         disk['name'], disk['pool'])
                     vol = self.create_volume(disk)
+                    disk['created'] = 1
 
                 disk['type'] = 'file'
                 disk['source'] = vol.path()

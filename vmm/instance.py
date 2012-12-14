@@ -2,14 +2,13 @@
 
 import os
 import sys
-from lxml.builder import ElementMaker
 from lxml import etree
-import jinja2
-import jinja2.loaders
 
+import vmm
 import utils
 from disk import Disk
 from interface import Interface
+from templates import env
 
 defaults = {
         'machine': 'pc-0.15',
@@ -50,10 +49,6 @@ class Instance (dict):
         for k,v in defaults.items():
             self.setdefault(k, v)
 
-        self.elementmaker = ElementMaker()
-        self.env = jinja2.Environment(
-                loader=jinja2.loaders.PackageLoader('vmm'))
-
     @property
     def memory(self):
         mem_size, mem_unit = utils.parse_size(self['memory'])
@@ -77,8 +72,8 @@ class Instance (dict):
         return bus2dev[bus]
 
     def toxml(self):
-        tmpl = self.env.get_template('domain.xml')
-        return tmpl.render(dom=self)
+        tmpl = env.get_template('domain.xml')
+        return tmpl.render(dom=self, vmm=vmm)
 
 if __name__ == '__main__':
     i = Instance(
