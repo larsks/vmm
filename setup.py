@@ -28,6 +28,10 @@ setup(
     packages=find_packages(),
     include_package_data=True,
 
+    package_data={
+        'vmm': [ 'templates/*.xml' ],
+        },
+
     entry_points={
         'console_scripts': [
             'vmm = vmm.main:main'
