@@ -43,6 +43,13 @@ class API (object):
 
         return dom
 
+    def status(self, instance):
+        try:
+            dom = self.find_domain(instance['name'])
+            return 'active' if dom.isActive()  else 'inactive'
+        except KeyError:
+            return 'undefined'
+
     def find_pool(self, name):
         pool = self.conn.storagePoolLookupByName(name)
         return pool

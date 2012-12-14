@@ -38,7 +38,11 @@ def cmd_dumpxml(opts, project, api):
         print i.toxml()
 
 def cmd_status(opts, project, api):
-    pass
+    for i in project.instances():
+        if opts.names and not i['name'] in opts.names:
+            continue
+
+        print i['name'], api.status(i)
 
 def cmd_suspend(opts, project, api):
     pass
