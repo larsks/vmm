@@ -13,6 +13,17 @@ from lxml import objectify
 
 import utils
 
+domain_states = {
+        libvirt.VIR_DOMAIN_NOSTATE: 'none',
+        libvirt.VIR_DOMAIN_RUNNING: 'running',
+        libvirt.VIR_DOMAIN_BLOCKED: 'blocked',
+        libvirt.VIR_DOMAIN_PAUSED: 'paused',
+        libvirt.VIR_DOMAIN_SHUTDOWN: 'shutdown',
+        libvirt.VIR_DOMAIN_SHUTOFF: 'shutoff',
+        libvirt.VIR_DOMAIN_CRASHED: 'crashed',
+        libvirt.VIR_DOMAIN_PMSUSPENDED: 'pmsuspend',
+        }
+
 class API (object):
     def __init__(self, uri=None):
         if uri is None:
@@ -43,12 +54,32 @@ class API (object):
 
         return dom
 
-    def status(self, instance):
+    def suspend_domain(self, name):
         try:
-            dom = self.find_domain(instance['name'])
-            return 'active' if dom.isActive()  else 'inactive'
+            dom = self.find_domain(name)
+            self.log.warn('suspending domain %s', name)
+            dom.suspend()
         except KeyError:
-            return 'undefined'
+            self.log.debug('attempt to suspend undefined domain %s', name)
+            pass
+
+    def resume_domain(self, name):
+        try:
+            dom = self.find_domain(name)
+            self.log.warn('resuming domain %s', name)
+            dom.resume()
+        except KeyError:
+            self.log.debug('attempt to resume undefined domain %s', name)
+            pass
+
+    def status(self, name):
+        try:
+            dom = self.find_domain(name)
+            state, reason = dom.state(0)
+            return ('active' if dom.isActive()  else 'inactive',
+                    domain_states.get(state, state), state)
+        except KeyError:
+            return ('undefined', None, None)
 
     def find_pool(self, name):
         pool = self.conn.storagePoolLookupByName(name)
