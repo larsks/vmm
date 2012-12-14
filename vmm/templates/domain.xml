@@ -1,4 +1,5 @@
-<domain type='kvm'>
+<domain type='kvm'
+  xmlns:vmm="{{vmm.xmlns}}">
   <name>{{dom.name}}</name>
   <memory unit='B'>{{dom.memory}}</memory>
   <vcpu>{{dom.vcpu|default('1')}}</vcpu>
@@ -12,6 +13,13 @@
     <{{feature}}/>
     {% endfor -%}
   </features>
+  <metadata>
+    {% for disk in dom.disks -%}
+    {% if disk.created -%}
+    <vmm:created type="disk" source="{{disk.source}}" />
+    {% endif -%}
+    {% endfor %}
+  </metadata>
   <clock offset='utc'/>
   <on_poweroff>{{dom.on_poweroff|default('destroy')}}</on_poweroff>
   <on_reboot>{{dom.on_reboot|default('restart')}}</on_reboot>
