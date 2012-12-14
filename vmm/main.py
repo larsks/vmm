@@ -67,7 +67,8 @@ def parse_args():
     p.add_argument('--debug', action='store_true')
     p.add_argument('--connect', '-c',
             help='libvirt connect uri, defaults to LIBVIRT_DEFAULT_URI if set, otherwise qemu:///session')
-    p.add_argument('--config', '-f', default='instances.yml')
+    p.add_argument('--config', '-f',
+            default=os.environ.get('VMM_CONFIG_FILE','instances.yml'))
 
     s = p.add_subparsers()
 
