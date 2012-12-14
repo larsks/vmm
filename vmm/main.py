@@ -31,6 +31,12 @@ def cmd_down(opts, project, api):
 
 def cmd_up(opts, project, api):
     for i in selected_instances(opts, project):
+        active, state, state_num = api.status(i['name'])
+
+        if active == 'active':
+            log.warn('%s already active', i['name'])
+            continue
+
         log.warn('starting %s', i['name'])
         api.start(i)
 
