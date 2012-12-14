@@ -1,0 +1,10 @@
+<interface type='{{interface.type}}'>
+  {% if interface.macaddress -%}
+  <mac address='{{interface.macaddress}}'/>
+  {% endif -%}
+  <source {{interface.type}}='{{interface.source}}'/>
+  {% if interface.ovs -%}
+  <virtualport type='openvswitch'/>
+  {% endif -%}
+</interface>
+

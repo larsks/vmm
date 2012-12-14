@@ -1,0 +1,51 @@
+<domain type='kvm'>
+  <name>{{dom.name}}</name>
+  <memory unit='B'>{{dom.memory}}</memory>
+  <vcpu>{{dom.vcpu|default('1')}}</vcpu>
+  <os>
+    <type arch='{{dom.arch|default(dom.sysarch)}}'
+      machine='{{dom.machine|default('pc-0.15')}}'>hvm</type>
+    <boot dev='{{dom.boot_dev|default('hd')}}'/>
+  </os>
+  <features>
+    {% for feature in dom.features -%}
+    <{{feature}}/>
+    {% endfor -%}
+  </features>
+  <clock offset='utc'/>
+  <on_poweroff>{{dom.on_poweroff|default('destroy')}}</on_poweroff>
+  <on_reboot>{{dom.on_reboot|default('restart')}}</on_reboot>
+  <on_crash>{{dom.on_crash|default('destroy')}}</on_crash>
+  <devices>
+    <emulator>{{dom.emulator}}</emulator>
+
+    <!-- DISKS -->
+    {% for disk in dom.disks -%}
+    {% include "disk.xml" %}
+    {% endfor %}
+
+    <!-- NETWORK INTERFACES -->
+    {% for interface in dom.interfaces -%}
+    {% include "interface.xml" %}
+    {% endfor %}
+
+    <controller type='usb' index='0'/>
+    <input type='mouse' bus='ps2'/>
+    <serial type='pty'>
+      <target port='0'/>
+    </serial>
+    <console type='pty'>
+      <target type='serial' port='0'/>
+    </console>
+    <graphics type='{{dom.graphics.type|default('vnc')}}'
+      port='{{dom.graphics.port|default('-1')}}'
+      autoport='{{dom.graphics.autoport|default('yes')}}'/>
+    <video>
+      <model type='{{dom.video.type|default('cirrus')}}'
+        vram='{{dom.video.vram|default('9216')}}'
+        heads='{{dom.video.heads|default('1')}}'/>
+    </video>
+    <memballoon model='virtio'/>
+  </devices>
+</domain>
+

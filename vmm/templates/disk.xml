@@ -1,0 +1,8 @@
+
+<!-- disk {{disk.source}} -->
+<disk type='file' device='disk'>
+  <driver name='qemu' type='{{disk.format}}'/>
+  <source file='{{disk.source}}'/>
+  <target dev='{{disk.device}}' bus='{{disk.bus}}'/>
+</disk>
+
