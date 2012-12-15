@@ -148,8 +148,12 @@ class API (object):
     def start(self, instance):
         self.process_disks(instance)
 
-        self.log.debug('defining domain %(name)s' % instance)
-        dom = self.conn.defineXML(instance.toxml())
+        try:
+            dom = self.find_domain(instance['name'])
+        except KeyError:
+            self.log.debug('defining domain %(name)s' % instance)
+            dom = self.conn.defineXML(instance.toxml())
+
         self.log.warn('starting domain %(name)s' % instance)
         dom.create()
 
