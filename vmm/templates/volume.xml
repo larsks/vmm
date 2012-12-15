@@ -1,0 +1,15 @@
+<volume>
+  <name>{{vol.name}}</name>
+  <capacity unit='bytes'>{{vol.size}}</capacity>
+  <target>
+    <format type='qcow2'/>
+  </target>
+
+  {% if vol.backing_store %}
+  <backingStore>
+    <path>{{vol.backing_store.path}}</path>
+    <format type='{{vol.backing_store.format}}'/>
+  </backingStore>
+  {% endif %}
+</volume>
+
