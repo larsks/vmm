@@ -22,6 +22,15 @@ domain_states = {
         libvirt.VIR_DOMAIN_PMSUSPENDED: 'pmsuspend',
         }
 
+device_prefix = {
+        'virtio': 'vd',
+        'scsi': 'sd',
+        'sata': 'sd',
+        'usb': 'sd',
+        'ide': 'hd',
+        }
+
+
 class API (object):
     def __init__(self, uri=None):
         if uri is None:
@@ -116,17 +125,21 @@ class API (object):
 
     def process_disks(self, instance):
         disks = []
+        devices = {}
 
         for disk in instance.disks:
-            disk['name'] = disk['name'] % instance
-            disk.setdefault('pool', 'default')
-
-            self.log.info('processing volume %(name)s' % disk)
+            devnum = devices.setdefault(disk['bus'], 0)
+            devices[disk['bus']] = devnum + 1
+            disk['device'] = device_prefix[disk['bus']] + chr(ord('a') + devnum)
 
             if disk['type'] == 'file':
-                continue
+                pass
+            elif disk['type'] == 'block':
+                disk.setdefault('format', 'raw')
+            elif disk['type'] == 'volume':
+                disk['name'] = disk['name'] % instance
+                disk.setdefault('pool', 'default')
 
-            if disk['type'] == 'volume':
                 self.log.debug('looking for vol %s in pool %s',
                         disk['name'], disk['pool'])
                 try:
@@ -141,12 +154,15 @@ class API (object):
 
                 disk['type'] = 'file'
                 disk['source'] = vol.path()
-                disks.append(disk)
+
+            self.log.info('added disk %(source)s' % disk)
+            disks.append(disk)
 
             instance['disks'] = disks
 
     def start(self, instance):
         self.process_disks(instance)
+        print instance.toxml()
 
         try:
             dom = self.find_domain(instance['name'])

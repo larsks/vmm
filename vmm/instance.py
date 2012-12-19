@@ -68,9 +68,6 @@ class Instance (dict):
         for interface in self.get('interfaces', []):
             yield Interface(interface)
 
-    def device(self, bus):
-        return bus2dev[bus]
-
     def toxml(self):
         tmpl = env.get_template('domain.xml')
         return tmpl.render(dom=self, vmm=vmm)

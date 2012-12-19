@@ -1,8 +1,13 @@
 
 <!-- disk {{disk.source}} -->
-<disk type='file' device='disk'>
+<disk type='{{disk.type}}' device='disk'>
   <driver name='qemu' type='{{disk.format}}'/>
+
+  {% if disk.type == 'file' %}
   <source file='{{disk.source}}'/>
+  {% elif disk.type == 'block' %}
+  <source dev='{{disk.source}}'/>
+  {% endif %}
   <target dev='{{disk.device}}' bus='{{disk.bus}}'/>
 </disk>
 
