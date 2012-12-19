@@ -25,7 +25,7 @@ def cmd_down(opts, project, api):
     for i in selected_instances(opts, project):
         log.warn('stopping %s', i['name'])
         try:
-            api.stop(i, keep=opts.keep)
+            api.stop(i, keep=project.get('keep', opts.keep))
         except KeyError:
             continue
 
