@@ -162,7 +162,6 @@ class API (object):
 
     def start(self, instance):
         self.process_disks(instance)
-        print instance.toxml()
 
         try:
             dom = self.find_domain(instance['name'])
